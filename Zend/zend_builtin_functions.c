@@ -703,10 +703,11 @@ static void add_class_vars(zend_class_entry *scope, zend_class_entry *ce, bool s
 	zval *default_properties_table = CE_DEFAULT_PROPERTIES_TABLE(ce);
 
 	ZEND_HASH_FOREACH_STR_KEY_PTR(&ce->properties_info, key, prop_info) {
-		if (((prop_info->flags & ZEND_ACC_PROTECTED) &&
-			 !zend_check_protected(prop_info->ce, scope)) ||
-			((prop_info->flags & ZEND_ACC_PRIVATE) &&
-			  prop_info->ce != scope)) {
+		if (
+			((prop_info->flags & ZEND_ACC_PROTECTED) && !zend_check_protected(prop_info->ce, scope))
+			|| ((prop_info->flags & ZEND_ACC_INTERNAL) && !zend_check_internal(prop_info->ce, scope))
+			|| ((prop_info->flags & ZEND_ACC_PRIVATE) && prop_info->ce != scope)
+		) {
 			continue;
 		}
 		prop = NULL;
@@ -874,10 +875,12 @@ ZEND_FUNCTION(get_class_methods)
 	ZEND_HASH_FOREACH_PTR(&ce->function_table, mptr) {
 		if ((mptr->common.fn_flags & ZEND_ACC_PUBLIC)
 		 || (scope &&
-			 (((mptr->common.fn_flags & ZEND_ACC_PROTECTED) &&
-			   zend_check_protected(mptr->common.scope, scope))
-		   || ((mptr->common.fn_flags & ZEND_ACC_PRIVATE) &&
-			   scope == mptr->common.scope)))
+			 (
+				((mptr->common.fn_flags & ZEND_ACC_PROTECTED) && zend_check_protected(mptr->common.scope, scope))
+				|| ((mptr->common.fn_flags & ZEND_ACC_INTERNAL) && zend_check_internal(mptr->common.scope, scope))
+		   		|| ((mptr->common.fn_flags & ZEND_ACC_PRIVATE) && scope == mptr->common.scope)
+			   )
+			)
 		) {
 			ZVAL_STR_COPY(&method_name, mptr->common.function_name);
 			zend_hash_next_index_insert_new(Z_ARRVAL_P(return_value), &method_name);

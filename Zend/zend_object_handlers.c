@@ -245,6 +245,44 @@ static zend_never_inline int is_protected_compatible_scope(zend_class_entry *ce,
 }
 /* }}} */
 
+static zend_never_inline int is_internal_compatible_scope(zend_class_entry *ce, zend_function *func_info) /* {{{ */
+{
+	const char *class_name_or_function_name;
+	char *namespace;
+	char *current_class_namespace;
+	int ret = 0;
+
+	if (func_info->common.scope) {
+		class_name_or_function_name = ZSTR_VAL(func_info->common.scope->name);
+	} else if (func_info->common.function_name) {
+		class_name_or_function_name = ZSTR_VAL(func_info->common.function_name);
+	} else {
+		// Global scope
+		return 0;
+	}
+
+	// tmp_last_current_namespace_char stuff is a tweak to avoid malloc and free usages
+	// (basically perfs)
+	// TODO: add a comment about it!
+
+	namespace = strrchr(class_name_or_function_name, '\\');
+	*namespace = '\0';
+
+	current_class_namespace = strrchr(ZSTR_VAL(ce->name), '\\');
+	*current_class_namespace = '\0';
+
+	if (strcmp(class_name_or_function_name, ZSTR_VAL(ce->name)) == 0) {
+		ret = 1;
+	}
+
+	// Restoring removed char
+	*namespace = '\\';
+	*current_class_namespace = '\\';
+
+	return ret;
+}
+/* }}} */
+
 static zend_never_inline zend_property_info *zend_get_parent_private_property(zend_class_entry *scope, zend_class_entry *ce, zend_string *member) /* {{{ */
 {
 	zval *zv;
@@ -314,7 +352,7 @@ dynamic:
 	property_info = (zend_property_info*)Z_PTR_P(zv);
 	flags = property_info->flags;
 
-	if (flags & (ZEND_ACC_CHANGED|ZEND_ACC_PRIVATE|ZEND_ACC_PROTECTED)) {
+	if (flags & (ZEND_ACC_CHANGED|ZEND_ACC_PRIVATE|ZEND_ACC_PROTECTED|ZEND_ACC_INTERNAL)) {
 		if (UNEXPECTED(EG(fake_scope))) {
 			scope = EG(fake_scope);
 		} else {
@@ -347,6 +385,10 @@ wrong:
 						zend_bad_property_access(property_info, ce, member);
 					}
 					return ZEND_WRONG_PROPERTY_OFFSET;
+				}
+			} else if (flags & ZEND_ACC_INTERNAL) {
+				if (UNEXPECTED(!is_internal_compatible_scope(property_info->ce, zend_get_executed_func_info()))) {
+					goto wrong;
 				}
 			} else {
 				ZEND_ASSERT(flags & ZEND_ACC_PROTECTED);
@@ -410,7 +452,7 @@ dynamic:
 	property_info = (zend_property_info*)Z_PTR_P(zv);
 	flags = property_info->flags;
 
-	if (flags & (ZEND_ACC_CHANGED|ZEND_ACC_PRIVATE|ZEND_ACC_PROTECTED)) {
+	if (flags & (ZEND_ACC_CHANGED|ZEND_ACC_PRIVATE|ZEND_ACC_PROTECTED|ZEND_ACC_INTERNAL)) {
 		if (UNEXPECTED(EG(fake_scope))) {
 			scope = EG(fake_scope);
 		} else {
@@ -439,6 +481,10 @@ wrong:
 					}
 					return ZEND_WRONG_PROPERTY_INFO;
 				}
+			} else if (flags & ZEND_ACC_INTERNAL) {
+				// Do nothing for now
+				// TODO: do something!
+				printf("Coucou c'est moi internal 2!\n");
 			} else {
 				ZEND_ASSERT(flags & ZEND_ACC_PROTECTED);
 				if (UNEXPECTED(!is_protected_compatible_scope(property_info->ce, scope))) {
@@ -487,7 +533,8 @@ ZEND_API int zend_check_property_access(zend_object *zobj, zend_string *prop_inf
 				/* we we're looking for a private prop but found a private one of the same name but another class */
 				return FAILURE;
 			}
-		} else {
+		// } else {
+		} else if (property_info->flags & ZEND_ACC_PROTECTED) { // TODO: a better update here would probably to manage internal :')
 			ZEND_ASSERT(property_info->flags & ZEND_ACC_PROTECTED);
 		}
 		return SUCCESS;
@@ -1125,6 +1172,17 @@ ZEND_API int zend_check_protected(zend_class_entry *ce, zend_class_entry *scope)
 }
 /* }}} */
 
+/* Ensures that we're allowed to call a internal method.
+ */
+ZEND_API int zend_check_internal(zend_class_entry *ce, zend_class_entry *scope) /* {{{ */
+{
+	zend_class_entry *fbc_scope = ce;
+
+	printf("%s", ZSTR_VAL(ce->name));
+	return 1;
+}
+/* }}} */
+
 ZEND_API zend_function *zend_get_call_trampoline_func(zend_class_entry *ce, zend_string *method_name, int is_static) /* {{{ */
 {
 	size_t mname_len;
@@ -1234,7 +1292,7 @@ ZEND_API zend_function *zend_std_get_method(zend_object **obj_ptr, zend_string *
 	fbc = Z_FUNC_P(func);
 
 	/* Check access level */
-	if (fbc->op_array.fn_flags & (ZEND_ACC_CHANGED|ZEND_ACC_PRIVATE|ZEND_ACC_PROTECTED)) {
+	if (fbc->op_array.fn_flags & (ZEND_ACC_CHANGED|ZEND_ACC_PRIVATE|ZEND_ACC_PROTECTED|ZEND_ACC_INTERNAL)) {
 		scope = zend_get_executed_scope();
 
 		if (fbc->common.scope != scope) {
@@ -1341,7 +1399,8 @@ ZEND_API zend_function *zend_std_get_static_method(zend_class_entry *ce, zend_st
 		scope = zend_get_executed_scope();
 		if (UNEXPECTED(fbc->common.scope != scope)) {
 			if (UNEXPECTED(fbc->op_array.fn_flags & ZEND_ACC_PRIVATE)
-			 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(fbc), scope))) {
+			 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(fbc), scope))
+			 || UNEXPECTED(!zend_check_internal(zend_get_function_root_class(fbc), scope))) {
 				zend_function *fallback_fbc = get_static_method_fallback(ce, function_name);
 				if (!fallback_fbc) {
 					zend_bad_method_call(fbc, function_name, scope);

@@ -193,6 +193,8 @@ char *zend_visibility_string(uint32_t fn_flags) /* {{{ */
 		return "public";
 	} else if (fn_flags & ZEND_ACC_PRIVATE) {
 		return "private";
+	} else if (fn_flags & ZEND_ACC_INTERNAL) {
+		return "internal";
 	} else {
 		ZEND_ASSERT(fn_flags & ZEND_ACC_PROTECTED);
 		return "protected";

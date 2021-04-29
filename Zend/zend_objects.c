@@ -98,6 +98,7 @@ ZEND_API void zend_objects_destroy_object(zend_object *object)
 	if (destructor) {
 		zend_object *old_exception;
 
+		/** TODO: add support for ZEND_ACC_INTERNAL */
 		if (destructor->op_array.fn_flags & (ZEND_ACC_PRIVATE|ZEND_ACC_PROTECTED)) {
 			if (destructor->op_array.fn_flags & ZEND_ACC_PRIVATE) {
 				/* Ensure that if we're calling a private function, we're allowed to do so.
@@ -126,6 +127,7 @@ ZEND_API void zend_objects_destroy_object(zend_object *object)
 				if (EG(current_execute_data)) {
 					zend_class_entry *scope = zend_get_executed_scope();
 
+					// TODO: add something for internal
 					if (!zend_check_protected(zend_get_function_root_class(destructor), scope)) {
 						zend_throw_error(NULL,
 							"Call to protected %s::__destruct() from %s%s",

@@ -269,6 +269,8 @@ ZEND_API bool zend_verify_const_access(zend_class_constant *c, zend_class_entry 
 		return 1;
 	} else if (Z_ACCESS_FLAGS(c->value) & ZEND_ACC_PRIVATE) {
 		return (c->ce == scope);
+	} else if (Z_ACCESS_FLAGS(c->value) & ZEND_ACC_INTERNAL) {
+		return zend_check_internal(c->ce, scope);
 	} else {
 		ZEND_ASSERT(Z_ACCESS_FLAGS(c->value) & ZEND_ACC_PROTECTED);
 		return zend_check_protected(c->ce, scope);

@@ -316,6 +316,7 @@ static void print_hash(smart_str *buf, HashTable *ht, int indent, bool is_object
 
 				smart_str_appendl(buf, prop_name, prop_len);
 				if (class_name && mangled == SUCCESS) {
+					// TODO: add stuff for internal i guess
 					if (class_name[0] == '*') {
 						smart_str_appends(buf, ":protected");
 					} else {
@@ -472,7 +473,7 @@ static void zend_print_zval_r_to_buf(smart_str *buf, zval *expr, int indent) /* 
 					}
 					smart_str_appendc(buf, '\n');
 				}
-				
+
 				if (GC_IS_RECURSIVE(Z_OBJ_P(expr))) {
 					smart_str_appends(buf, " *RECURSION*");
 					return;

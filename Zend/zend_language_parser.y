@@ -153,6 +153,7 @@ static YYSIZE_T zend_yytnamerr(char*, const char*);
 %token <ident> T_FINAL         "'final'"
 %token <ident> T_PRIVATE       "'private'"
 %token <ident> T_PROTECTED     "'protected'"
+%token <ident> T_INTERNAL      "'internal'"
 %token <ident> T_PUBLIC        "'public'"
 %token <ident> T_VAR           "'var'"
 %token <ident> T_UNSET         "'unset'"
@@ -298,7 +299,7 @@ reserved_non_modifiers:
 
 semi_reserved:
 	  reserved_non_modifiers
-	| T_STATIC | T_ABSTRACT | T_FINAL | T_PRIVATE | T_PROTECTED | T_PUBLIC
+	| T_STATIC | T_ABSTRACT | T_FINAL | T_PRIVATE | T_PROTECTED | T_INTERNAL | T_PUBLIC
 ;
 
 identifier:
@@ -761,6 +762,7 @@ optional_visibility_modifier:
 		%empty					{ $$ = 0; }
 	|	T_PUBLIC				{ $$ = ZEND_ACC_PUBLIC; }
 	|	T_PROTECTED				{ $$ = ZEND_ACC_PROTECTED; }
+	|	T_INTERNAL				{ $$ = ZEND_ACC_INTERNAL; }
 	|	T_PRIVATE				{ $$ = ZEND_ACC_PRIVATE; }
 ;
 
@@ -971,6 +973,7 @@ member_modifier:
 		T_PUBLIC				{ $$ = ZEND_ACC_PUBLIC; }
 	|	T_PROTECTED				{ $$ = ZEND_ACC_PROTECTED; }
 	|	T_PRIVATE				{ $$ = ZEND_ACC_PRIVATE; }
+	|	T_INTERNAL				{ $$ = ZEND_ACC_INTERNAL; }
 	|	T_STATIC				{ $$ = ZEND_ACC_STATIC; }
 	|	T_ABSTRACT				{ $$ = ZEND_ACC_ABSTRACT; }
 	|	T_FINAL					{ $$ = ZEND_ACC_FINAL; }

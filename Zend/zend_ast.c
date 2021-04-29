@@ -1428,6 +1428,8 @@ static ZEND_COLD void zend_ast_export_visibility(smart_str *str, uint32_t flags)
 		smart_str_appends(str, "public ");
 	} else if (flags & ZEND_ACC_PROTECTED) {
 		smart_str_appends(str, "protected ");
+	} else if (flags & ZEND_ACC_INTERNAL) {
+		smart_str_appends(str, "internal ");
 	} else if (flags & ZEND_ACC_PRIVATE) {
 		smart_str_appends(str, "private ");
 	}
@@ -2099,6 +2101,8 @@ simple_list:
 				smart_str_appends(str, " as public");
 			} else if (ast->attr & ZEND_ACC_PROTECTED) {
 				smart_str_appends(str, " as protected");
+			} else if (ast->attr & ZEND_ACC_INTERNAL) {
+				smart_str_appends(str, " as internal");
 			} else if (ast->attr & ZEND_ACC_PRIVATE) {
 				smart_str_appends(str, " as private");
 			} else if (ast->child[1]) {

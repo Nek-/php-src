@@ -4066,6 +4066,9 @@ ZEND_API zend_property_info *zend_declare_typed_property(zend_class_entry *ce, z
 		property_info->name = zend_string_copy(name);
 	} else if (access_type & ZEND_ACC_PRIVATE) {
 		property_info->name = zend_mangle_property_name(ZSTR_VAL(ce->name), ZSTR_LEN(ce->name), ZSTR_VAL(name), ZSTR_LEN(name), is_persistent_class(ce));
+	} else if (access_type & ZEND_ACC_INTERNAL) {
+		/* TODO: this is a copy/paste from public, it obviously needs to be changed. */
+		property_info->name = zend_string_copy(name);
 	} else {
 		ZEND_ASSERT(access_type & ZEND_ACC_PROTECTED);
 		property_info->name = zend_mangle_property_name("*", 1, ZSTR_VAL(name), ZSTR_LEN(name), is_persistent_class(ce));

@@ -4537,7 +4537,9 @@ static zend_function *zend_get_compatible_func_or_null(zend_class_entry *ce, zen
 	if (!(fbc->common.fn_flags & ZEND_ACC_PRIVATE)
 		&& (fbc->common.scope->ce_flags & ZEND_ACC_LINKED)
 		&& (!CG(active_class_entry) || (CG(active_class_entry)->ce_flags & ZEND_ACC_LINKED))
-		&& zend_check_protected(zend_get_function_root_class(fbc), CG(active_class_entry))) {
+		&& zend_check_protected(zend_get_function_root_class(fbc), CG(active_class_entry))
+		&& zend_check_internal(zend_get_function_root_class(fbc), CG(active_class_entry))
+	) {
 		return fbc;
 	}
 
@@ -6482,7 +6484,7 @@ void zend_compile_params(zend_ast *ast, zend_ast *return_type_ast, uint32_t fall
 		bool is_ref = (param_ast->attr & ZEND_PARAM_REF) != 0;
 		bool is_variadic = (param_ast->attr & ZEND_PARAM_VARIADIC) != 0;
 		uint32_t visibility =
-			param_ast->attr & (ZEND_ACC_PUBLIC|ZEND_ACC_PROTECTED|ZEND_ACC_PRIVATE);
+			param_ast->attr & (ZEND_ACC_PUBLIC|ZEND_ACC_PROTECTED|ZEND_ACC_PRIVATE|ZEND_ACC_INTERNAL);
 
 		znode var_node, default_node;
 		zend_uchar opcode;
@@ -6661,7 +6663,7 @@ void zend_compile_params(zend_ast *ast, zend_ast *return_type_ast, uint32_t fall
 		zend_ast *param_ast = list->child[i];
 		bool is_ref = (param_ast->attr & ZEND_PARAM_REF) != 0;
 		uint32_t visibility =
-			param_ast->attr & (ZEND_ACC_PUBLIC|ZEND_ACC_PROTECTED|ZEND_ACC_PRIVATE);
+			param_ast->attr & (ZEND_ACC_PUBLIC|ZEND_ACC_PROTECTED|ZEND_ACC_PRIVATE|ZEND_ACC_INTERNAL);
 		if (!visibility) {
 			continue;
 		}
@@ -7691,7 +7693,7 @@ static void zend_compile_enum_case(zend_ast *ast)
 		}
 
 		if (enum_class->enum_backing_type != Z_TYPE(case_value_zv)) {
-			zend_error_noreturn(E_COMPILE_ERROR, "Enum case type %s does not match enum backing type %s", 
+			zend_error_noreturn(E_COMPILE_ERROR, "Enum case type %s does not match enum backing type %s",
 				zend_get_type_by_const(Z_TYPE(case_value_zv)),
 				zend_get_type_by_const(enum_class->enum_backing_type));
 		}

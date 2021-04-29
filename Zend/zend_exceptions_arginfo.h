@@ -299,6 +299,8 @@ static zend_class_entry *register_class_Error(zend_class_entry *class_entry_Thro
 	zend_declare_property_ex(class_entry, property_line_name, &property_line_default_value, ZEND_ACC_PROTECTED, NULL);
 	zend_string_release(property_line_name);
 
+	/* TODO: add ZEND_ACC_INTERNAL exception */
+
 	zval property_trace_default_value;
 	ZVAL_EMPTY_ARRAY(&property_trace_default_value);
 	zend_string *property_trace_name = zend_string_init("trace", sizeof("trace") - 1, 1);

@@ -613,14 +613,48 @@ ZEND_API zend_class_entry *zend_get_executed_scope(void) /* {{{ */
 {
 	zend_execute_data *ex = EG(current_execute_data);
 
-	while (1) {
-		if (!ex) {
-			return NULL;
-		} else if (ex->func && (ZEND_USER_CODE(ex->func->type) || ex->func->common.scope)) {
+	do {
+		if (ex->func && (ZEND_USER_CODE(ex->func->type) || ex->func->common.scope)) {
+			/*
+			if (!ex->func->common.function_name) {
+				printf("This is global\n");
+			} else {
+				printf("Something: %s\n", ZSTR_VAL(ex->func->common.function_name));
+			}
+			*/
+			// This may be undefined in serveral cases:
+			// 1. Global state (in this case func->common.function_name is also undefined)
+			// 2. A function call (outside of any object)
 			return ex->func->common.scope;
 		}
-		ex = ex->prev_execute_data;
-	}
+	} while (ex = ex->prev_execute_data);
+
+	return NULL;
+}
+/* }}} */
+
+// TODO: change return type
+ZEND_API zend_function *zend_get_executed_func_info(void) /* {{{ */
+{
+	zend_execute_data *ex = EG(current_execute_data);
+
+	do {
+		if (
+			ex->func
+			&& (
+				ZEND_USER_CODE(ex->func->type)
+				|| ex->func->common.scope
+				|| ex->func->common.function_name
+			)
+		) {
+			// This may be undefined in serveral cases:
+			// 1. Global state (in this case func->common.function_name is also undefined)
+			// 2. A function call (outside of any object)
+			return ex->func;
+		}
+	} while ((ex = ex->prev_execute_data));
+
+	return NULL;
 }
 /* }}} */
 

@@ -5758,7 +5758,8 @@ ZEND_VM_COLD_CONST_HANDLER(110, ZEND_CLONE, CONST|TMPVAR|UNUSED|THIS|CV, ANY)
 		scope = EX(func)->op_array.scope;
 		if (clone->common.scope != scope) {
 			if (UNEXPECTED(clone->common.fn_flags & ZEND_ACC_PRIVATE)
-			 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(clone), scope))) {
+			 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(clone), scope))
+			 || UNEXPECTED(!zend_check_internal(zend_get_function_root_class(clone), scope))) {
 				zend_wrong_clone_call(clone, scope);
 				FREE_OP1();
 				ZVAL_UNDEF(EX_VAR(opline->result.var));

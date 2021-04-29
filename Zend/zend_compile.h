@@ -199,10 +199,12 @@ typedef struct _zend_oparray_context {
 /* Common flags                                           |     |     |     */
 /* ============                                           |     |     |     */
 /*                                                        |     |     |     */
-/* Visibility flags (public < protected < private)        |     |     |     */
+/* Visibility flags                                       |     |     |     */
+/* (public < internal < protected < private)              |     |     |     */
 #define ZEND_ACC_PUBLIC                  (1 <<  0) /*     |  X  |  X  |  X  */
 #define ZEND_ACC_PROTECTED               (1 <<  1) /*     |  X  |  X  |  X  */
 #define ZEND_ACC_PRIVATE                 (1 <<  2) /*     |  X  |  X  |  X  */
+#define ZEND_ACC_INTERNAL               (1 <<  11) /*     |  X  |  X  |  X  */
 /*                                                        |     |     |     */
 /* Property or method overrides private one               |     |     |     */
 #define ZEND_ACC_CHANGED                 (1 <<  3) /*     |  X  |  X  |     */
@@ -361,7 +363,7 @@ typedef struct _zend_oparray_context {
 #define ZEND_ACC_STRICT_TYPES            (1U << 31) /*    |  X  |     |     */
 
 
-#define ZEND_ACC_PPP_MASK  (ZEND_ACC_PUBLIC | ZEND_ACC_PROTECTED | ZEND_ACC_PRIVATE)
+#define ZEND_ACC_PPP_MASK  (ZEND_ACC_PUBLIC | ZEND_ACC_PROTECTED | ZEND_ACC_PRIVATE | ZEND_ACC_INTERNAL)
 
 /* call through internal function handler. e.g. Closure::invoke() */
 #define ZEND_ACC_CALL_VIA_HANDLER     ZEND_ACC_CALL_VIA_TRAMPOLINE

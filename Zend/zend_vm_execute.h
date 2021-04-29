@@ -4697,7 +4697,8 @@ static ZEND_VM_COLD ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_CLONE_SPEC_CONST_
 		scope = EX(func)->op_array.scope;
 		if (clone->common.scope != scope) {
 			if (UNEXPECTED(clone->common.fn_flags & ZEND_ACC_PRIVATE)
-			 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(clone), scope))) {
+			 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(clone), scope))
+			 || UNEXPECTED(!zend_check_internal(zend_get_function_root_class(clone), scope))) {
 				zend_wrong_clone_call(clone, scope);
 
 				ZVAL_UNDEF(EX_VAR(opline->result.var));
@@ -14421,7 +14422,8 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_CLONE_SPEC_TMPVAR_HANDLER(ZEND
 		scope = EX(func)->op_array.scope;
 		if (clone->common.scope != scope) {
 			if (UNEXPECTED(clone->common.fn_flags & ZEND_ACC_PRIVATE)
-			 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(clone), scope))) {
+			 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(clone), scope))
+			 || UNEXPECTED(!zend_check_internal(zend_get_function_root_class(clone), scope))) {
 				zend_wrong_clone_call(clone, scope);
 				zval_ptr_dtor_nogc(EX_VAR(opline->op1.var));
 				ZVAL_UNDEF(EX_VAR(opline->result.var));
@@ -31109,7 +31111,8 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_CLONE_SPEC_UNUSED_HANDLER(ZEND
 		scope = EX(func)->op_array.scope;
 		if (clone->common.scope != scope) {
 			if (UNEXPECTED(clone->common.fn_flags & ZEND_ACC_PRIVATE)
-			 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(clone), scope))) {
+			 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(clone), scope))
+			 || UNEXPECTED(!zend_check_internal(zend_get_function_root_class(clone), scope))) {
 				zend_wrong_clone_call(clone, scope);
 
 				ZVAL_UNDEF(EX_VAR(opline->result.var));
@@ -38170,7 +38173,8 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_CLONE_SPEC_CV_HANDLER(ZEND_OPC
 		scope = EX(func)->op_array.scope;
 		if (clone->common.scope != scope) {
 			if (UNEXPECTED(clone->common.fn_flags & ZEND_ACC_PRIVATE)
-			 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(clone), scope))) {
+			 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(clone), scope))
+			 || UNEXPECTED(!zend_check_internal(zend_get_function_root_class(clone), scope))) {
 				zend_wrong_clone_call(clone, scope);
 
 				ZVAL_UNDEF(EX_VAR(opline->result.var));
